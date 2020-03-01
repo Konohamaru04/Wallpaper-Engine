@@ -2,20 +2,35 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fstream>
+#include <windows.h>
 
 using namespace std;
 
-int createFiles();
-int filesCheker();
+int fps;
+
+void filesCheker();
 bool is_file_exist_frame();
 bool is_file_exist_loop();
+bool is_file_exist_settings();
 void menu();
 void selectvideo();
 void mainProcess();
+void frameCreatorFile();
+void loophandlerFile();
+void settingsFile();
+void cleanup();
+int filesChekerManual();
+void settings();
+void applySettings();
+int fetchSettings();
+void setFPS();
+void logo();
 
 int main()
-{
-    int createFile = createFiles();
+{   
+    applySettings();
+    loophandlerFile();
+    frameCreatorFile();
     menu();
     return 0;
 }
@@ -23,12 +38,31 @@ int main()
 void menu()
 {
     int menuHandler;
+    int filchk = 0;
     while (1)
     {
-        cout<<"\t\tCheap Wallpaper Engine\n"<<endl;
-        cout<<"\t1] Select Video"<<endl;
-        cout<<"\t2] Process\n"<<endl;
-        cout<<"\t3] Exit\n"<<endl;
+        filesCheker();
+        system("CLS");
+        logo();
+        cout<<"\t\t\t\t\t\tFPS : "<<fps<<endl;
+        cout<<"\t[1] Select Video"<<endl;
+        cout<<"\t[2] Process"<<endl;
+        cout<<"\t[3] Check Files"<<endl;
+        cout<<"\t[4] Settings\n"<<endl;
+        cout<<"\t[5] Exit\n"<<endl;
+
+        if(fps<22)
+        {
+            cout<<"\n\tWarning !!! FPS is set to less than 22."<<endl;
+        }
+        else if(fps>45)
+        {
+            cout<<"\n\tWarning !!! FPS is set to greater than 45."<<endl;
+        }
+        else
+        {
+            cout<<"";
+        }
         
         cout<<">>>> ";
         cin>>menuHandler;
@@ -39,16 +73,115 @@ void menu()
                 break;
         case 2: mainProcess();
                 break;
-        case 3: cout<< "Closing app ... "<<endl;
+        case 3: filesChekerManual();
+                break;
+        case 4: settings();
+        case 5: cout<< "Closing app ... "<<endl;
+                cleanup();
                 exit(0);
                 break;
-        default: cout<<"Invalid Parameter !"<<endl;
+        default: cout<<"Invalid Input !"<<endl;
             break;
         }
     }
 }
 
-int createFiles()
+void selectvideo()
+{
+    if(system("python frameCreator.py"))
+    {
+        cout<<""<<endl;
+    }
+}
+
+void mainProcess()
+{
+    if(system("python loophandler.py"))
+    {
+        cout<<""<<endl;
+    }
+}
+
+void filesCheker()
+{
+    bool frame;
+    bool loop;
+    bool set;
+    char anyInput;
+loop =  is_file_exist_loop();
+frame = is_file_exist_frame();
+set = is_file_exist_settings();
+logo();
+if(loop&&frame&&set)
+{
+    cout<<""<<endl;
+}
+else if(loop&&!frame&&set)
+{
+    cout<< "Frame generator not found !"<<endl;
+    cout<< "Do you want to create missing file ? (y/n) : ";
+    cin>>anyInput;
+    switch (anyInput)
+    {
+    case 'y' : frameCreatorFile();
+                    break;
+    case 'n' : filesCheker();
+                    break;
+    default : cout<<"Invalid Input !"<<endl;
+                
+    }
+}
+else if(!loop&&frame&&set)
+{
+    cout<<"Frame Processor not found !"<<endl;
+    cout<< "Do you want to create missing file ? (y/n) : ";
+    cin>>anyInput;
+    switch (anyInput)
+    {
+    case 'y' : loophandlerFile();
+                    break;
+    case 'n' : filesCheker();
+                    break;
+    default : cout<<"Invalid Input !"<<endl;
+                
+    }
+}
+else if(loop&&frame&&!set)
+{
+    cout<<"User settingss not found !"<<endl;
+    cout<< "Do you want to create missing file ? (y/n) : ";
+    cin>>anyInput;
+    switch (anyInput)
+    {
+    case 'y' : settingsFile();
+                    break;
+    case 'n' : filesCheker();
+                    break;
+    default : cout<<"Invalid Input !"<<endl;
+                
+    }
+}
+
+}
+bool is_file_exist_loop()
+{
+    std::ifstream infile("loophandler.py");
+    return infile.good();
+}
+
+bool is_file_exist_frame()
+{
+    std::ifstream infile("frameCreator.py");
+    return infile.good();
+}
+
+bool is_file_exist_settings()
+{
+    std:ifstream infile("Settings.dat");
+    return infile.good();
+}
+
+void frameCreatorFile()
 {
     ofstream frameCreator;
     frameCreator.open("frameCreator.py");
@@ -57,6 +190,7 @@ int createFiles()
     frameCreator<<"import cv2"<<endl;
     frameCreator<<"import os"<<endl;
     frameCreator<<"import sys"<<endl;
+    frameCreator<<"from tqdm import tqdm"<<endl;
     frameCreator<<"def create_frames(video, frames):"<<endl;
     frameCreator<<"    if video.isOpened() == False:"<<endl;
     frameCreator<<"        print(\"Error opening video.\")"<<endl;
@@ -74,10 +208,9 @@ int createFiles()
     frameCreator<<"        return False"<<endl;
     frameCreator<<""<<endl;
     frameCreator<<"    success, image = video.read()"<<endl;
-    frameCreator<<"    for i in range(frames):"<<endl;
+    frameCreator<<"    for i in tqdm(range(frames)):"<<endl;
     frameCreator<<"        cv2.imwrite(f\"frames/frame{i+1}.jpg\", image)"<<endl;
     frameCreator<<"        success, image = video.read()"<<endl;
-    frameCreator<<"        sys.stdout.write(f\"\\r{int((i+1)/frames*100)}% complete\")"<<endl;
     frameCreator<<"        sys.stdout.flush()"<<endl;
     frameCreator<<""<<endl;
     frameCreator<<"    print(\"\")"<<endl;
@@ -101,7 +234,6 @@ int createFiles()
     frameCreator<<""<<endl;
     frameCreator<<"    create_folder()"<<endl;
     frameCreator<<""<<endl;
-    frameCreator<<"    os.system(\"cls\")"<<endl;
     frameCreator<<"    create_frames(video, frames)"<<endl;
     frameCreator<<""<<endl;
     frameCreator<<"if __name__ == \"__main__\":"<<endl;
@@ -109,14 +241,20 @@ int createFiles()
     frameCreator<<""<<endl;
     frameCreator.close();
 
+    cout<<"Frame Generator created Successfully !"<<endl;
+}
+
+void loophandlerFile()
+{
     ofstream loophandler;
     loophandler.open("loophandler.py");
     loophandler<<"import os"<<endl;
     loophandler<<"import ctypes"<<endl;
     loophandler<<"import time"<<endl;
+    loophandler<<"import msvcrt"<<endl;
     loophandler<<""<<endl;
-    loophandler<<"def play(fps=30):"<<endl;
-    loophandler<<"    print(\"Playing! (press Ctrl + C to stop)\")"<<endl;
+    loophandler<<"def play(fps="<<fps<<"):"<<endl;
+    loophandler<<"    print(\"Processing @"<<fps<<" FPS [ Press 'ESC' to stop ]\")"<<endl;
     loophandler<<"    total_frames = len(os.listdir(f\"{os.getcwd()}/frames\"))"<<endl;
     loophandler<<"    current_frame = 1"<<endl;
     loophandler<<""<<endl;
@@ -127,76 +265,140 @@ int createFiles()
     loophandler<<"            current_frame += 1"<<endl;
     loophandler<<"        else:"<<endl;
     loophandler<<"            current_frame = 0"<<endl;
+    loophandler<<"        if msvcrt.kbhit():"<<endl;
+    loophandler<<"            if ord(msvcrt.getch()) == 27:"<<endl;
+    loophandler<<"                break"<<endl;
     loophandler<<""<<endl;
     loophandler<<"if __name__ == \"__main__\":"<<endl;
     loophandler<<"    play()"<<endl;
     loophandler<<""<<endl;
     loophandler.close();
 
-    int files = filesCheker();
+    cout<<"Frame Processor created Successfully !"<<endl;
+}
 
-    if(files == 11)
+void settingsFile()
+{
+    logo();
+    cout<<"Set default FPS (between 22 - 45) : ";
+    cin>>fps;
+    ofstream settingsFile;
+    settingsFile.open("Settings.dat");
+    settingsFile<<fps;
+    settingsFile.close();
+}
+
+void cleanup()
+{
+    if(system("del /f loophandler.py"))
     {
-        return 0;
+        cout << "";
     }
-    else if(files == 10)
+
+    if(system("del /f frameCreator.py"))
     {
-        return 1;
+        cout << "";
     }
-    else if(files == 01)
-    {
-        return 2;
+}
+
+int filesChekerManual()
+{   
+    int temp;
+    int var=0;
+    cout<<"Frame Generator : ";
+    if(is_file_exist_frame())
+        cout<<"File exists"<<endl;
+    else
+        {
+            cout<<"File doesnot exists"<<endl;
+            var++;
+        }
+
+    cout<<"Frame Processor : ";
+    if(is_file_exist_loop())
+        cout<<"File exists"<<endl;
+    else
+        {
+            cout<<"File doesnot exists"<<endl;
+            var++;
+        }
+    cout<<"User Settings : ";
+    if(is_file_exist_settings())
+        cout<<"File exists"<<endl;
+    else
+        {
+            cout<<"File doesnot exists"<<endl;
+            var++;
+        }
+
+    if(var>3)
+        filesCheker();
+    cout<<"press 1 to continue : ";
+    cin>>temp;
+    return 0;  
+}
+
+void settings()
+{   
+    int switchVar;
+    while (1)
+    {   
+        system("CLS");
+        logo();
+        cout<<"\nProgram Settings :"<<endl<<endl;
+        cout<<"\t\t[1] Set Frames Per Second\n";
+        cout<<"\t\t[2] Main Menu\n";
+        cout<<"\t\t    >>>>";
+        cin>>switchVar;
+
+        switch (switchVar)
+        {
+        case 1 :setFPS();
+        case 2 :menu();
+                break;
+        default: cout<<"Invalid Imput!"<<endl;
+        }
     }
-
 }
 
-void selectvideo()
-{
-    if(system("python frameCreator.py"))
-    {
-        cout<<"success"<<endl;
-    }
-    //system("python frameCreator.py");
+void setFPS()
+{   
+    cout<<"Set FPS :\n"<<endl;
+    cout<<"Enter number of FPS ( between 22-45 to reduce CPU load) : ";
+    cin>>fps;
+    ofstream settings;
+    settings.open("Settings.dat");
+    settings<<fps;
+    settings.close();
+    applySettings();
+    cout<<"FPS set to : "<<fps;
+    Sleep(3);
 }
 
-void mainProcess()
+int fetchSettings()
 {
-    if(system("python loophandler.py"))
-    {
-        cout<<"success"<<endl;
-    }
-   // system("python loophandler.py");
+    int temp;
+    ifstream settings;
+    settings.open("Settings.dat");
+    settings>>temp;
+    settings.close();
+    return temp;
 }
 
-int filesCheker()
+void applySettings()
 {
-    bool frame;
-    bool loop;
-loop =  is_file_exist_loop();
-frame = is_file_exist_frame();
-
-if(loop&&frame)
-{
-    return 11;
-}
-else if(loop&&!frame)
-{
-    return 10;
-}
-else if(!loop&&frame)
-{
-    return 01;
+    fps = fetchSettings();
+    loophandlerFile();
 }
 
-}
-bool is_file_exist_loop()
+void logo()
 {
-    std::ifstream infile("loophandler.py");
-    return infile.good();
-}
-
-bool is_file_exist_frame()
-{
-    std::ifstream infile("frameCreator.py");
-    return infile.good();
+    cout<<"\t||DDDDD               ||  $$$$$$         CCCCC  "<<endl;
+    cout<<"\t||     D  eeeee       ||  $       eeeee  C      "<<endl;
+    cout<<"\t||     D  e   e   dddd||  $$$$$$  e   e  C      "<<endl;
+    cout<<"\t||     D  eeee    ||  ||       $  eeee   C      "<<endl;
+    cout<<"\t||DDDDD   eeeee   dddd||  $$$$$$  eeeee  CCCCC  "<<endl;
+    cout<<"\t                     Instagram : ig_konohamaru  "<<endl;
+    cout<<"\t                     GitHub    : konohamaru04   "<<endl;
+    cout<<"\n                  Cheap Wallpaper Engine            "<<endl<<endl;
 }
