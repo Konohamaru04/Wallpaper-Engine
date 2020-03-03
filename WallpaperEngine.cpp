@@ -28,6 +28,7 @@ void logo();
 
 int main()
 {   
+    
     applySettings();
     loophandlerFile();
     frameCreatorFile();
@@ -53,11 +54,11 @@ void menu()
 
         if(fps<22)
         {
-            cout<<"\n\tWarning !!! FPS is set to less than 22."<<endl;
+            cout<<"\tWarning !!! FPS is set to less than 22."<<endl;
         }
         else if(fps>45)
         {
-            cout<<"\n\tWarning !!! FPS is set to greater than 45."<<endl;
+            cout<<"\tWarning !!! FPS is set to greater than 45."<<endl;
         }
         else
         {
@@ -148,7 +149,7 @@ else if(!loop&&frame&&set)
 }
 else if(loop&&frame&&!set)
 {
-    cout<<"User settingss not found !"<<endl;
+    cout<<"User settings not found !"<<endl;
     cout<< "Do you want to create missing file ? (y/n) : ";
     cin>>anyInput;
     switch (anyInput)
@@ -279,7 +280,6 @@ void loophandlerFile()
 
 void settingsFile()
 {
-    logo();
     cout<<"Set default FPS (between 22 - 45) : ";
     cin>>fps;
     ofstream settingsFile;
@@ -345,10 +345,11 @@ void settings()
     {   
         system("CLS");
         logo();
+        cout<<"\t\t\t\t\t\tFPS : "<<fps<<endl;
         cout<<"\nProgram Settings :"<<endl<<endl;
         cout<<"\t\t[1] Set Frames Per Second\n";
         cout<<"\t\t[2] Main Menu\n";
-        cout<<"\t\t    >>>>";
+        cout<<"\t\t    >>>> ";
         cin>>switchVar;
 
         switch (switchVar)
@@ -372,7 +373,7 @@ void setFPS()
     settings.close();
     applySettings();
     cout<<"FPS set to : "<<fps;
-    Sleep(3);
+    Sleep(3000);
 }
 
 int fetchSettings()
@@ -392,7 +393,8 @@ void applySettings()
 }
 
 void logo()
-{
+{   
+    system("CLS");
     cout<<"\t||DDDDD               ||  $$$$$$         CCCCC  "<<endl;
     cout<<"\t||     D  eeeee       ||  $       eeeee  C      "<<endl;
     cout<<"\t||     D  e   e   dddd||  $$$$$$  e   e  C      "<<endl;
