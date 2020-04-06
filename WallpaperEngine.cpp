@@ -25,10 +25,11 @@ void applySettings();
 int fetchSettings();
 void setFPS();
 void logo();
+void license(); 
+void clearData();
 
 int main()
 {   
-    
     applySettings();
     loophandlerFile();
     frameCreatorFile();
@@ -49,8 +50,9 @@ void menu()
         cout<<"\t[1] Select Video"<<endl;
         cout<<"\t[2] Process"<<endl;
         cout<<"\t[3] Check Files"<<endl;
-        cout<<"\t[4] Settings\n"<<endl;
-        cout<<"\t[5] Exit\n"<<endl;
+        cout<<"\t[4] Settings"<<endl;
+        cout<<"\t[5] License\n"<<endl;
+        cout<<"\t[6] Exit\n"<<endl;
 
         if(fps<22)
         {
@@ -77,7 +79,8 @@ void menu()
         case 3: filesChekerManual();
                 break;
         case 4: settings();
-        case 5: cout<< "Closing app ... "<<endl;
+        case 5: license();
+        case 6: cout<< "Closing app ... "<<endl;
                 cleanup();
                 exit(0);
                 break;
@@ -348,14 +351,16 @@ void settings()
         cout<<"\t\t\t\t\t\tFPS : "<<fps<<endl;
         cout<<"\nProgram Settings :"<<endl<<endl;
         cout<<"\t\t[1] Set Frames Per Second\n";
-        cout<<"\t\t[2] Main Menu\n";
+        cout<<"\t\t[2] Clear Data\n";
+        cout<<"\t\t[3] Main Menu\n";
         cout<<"\t\t    >>>> ";
         cin>>switchVar;
 
         switch (switchVar)
         {
         case 1 :setFPS();
-        case 2 :menu();
+        case 2 :clearData();
+        case 3 :menu();
                 break;
         default: cout<<"Invalid Imput!"<<endl;
         }
@@ -392,6 +397,35 @@ void applySettings()
     loophandlerFile();
 }
 
+void clearData()
+{
+    if(system("RD /S /Q frames"))
+    {
+        cout<<""<<endl;
+        Sleep(3000);
+    }
+    else
+    {
+        cout << "Old Frames deleted !";
+        Sleep(3000);
+    }
+    
+}
+
+void license()
+{
+    int tempk;
+    system("CLS");
+    system("more LICENSE");
+    cout<<endl<<"Press 1 for Main menu"<<endl;
+    cout<<">>>>> ";
+    cin>>tempk;
+    if (tempk==1)
+    {
+        main();
+    }
+}
+
 void logo()
 {   
     system("CLS");
@@ -400,7 +434,7 @@ void logo()
     cout<<"\t||     D  e   e   dddd||  $$$$$$  e   e  C      "<<endl;
     cout<<"\t||     D  eeee    ||  ||       $  eeee   C      "<<endl;
     cout<<"\t||DDDDD   eeeee   dddd||  $$$$$$  eeeee  CCCCC  "<<endl;
-    cout<<"\t                     Instagram : ig_konohamaru  "<<endl;
+    cout<<"\t                     Instagram : fresh.the.asian  "<<endl;
     cout<<"\t                     GitHub    : konohamaru04   "<<endl;
     cout<<"\n                  Cheap Wallpaper Engine            "<<endl<<endl;
 }
