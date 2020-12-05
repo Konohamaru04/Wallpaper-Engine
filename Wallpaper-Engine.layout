@@ -2,7 +2,12 @@
 Order=0
 Focused=0
 [Editor_0]
-CursorCol=7
-CursorRow=35
-TopLine=22
+CursorCol=18
+CursorRow=118
+TopLine=87
+LeftChar=1
+[Editor_2]
+CursorCol=1
+CursorRow=1
+TopLine=238
 LeftChar=1

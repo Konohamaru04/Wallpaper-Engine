@@ -1,12 +1,14 @@
 #include <iostream>
 #include <stdlib.h>
-#include <string.h>
+#include <string>
 #include <fstream>
+#include <sstream>
 #include <windows.h>
 
 using namespace std;
 
 int fps;
+std::string loaded;
 
 void filesCheker();
 bool is_file_exist_frame();
@@ -27,9 +29,25 @@ void setFPS();
 void logo();
 void license(); 
 void clearData();
+void readLines();
+void frameManager();
+void selectVideoMenu();
+void processingMenu();
+void loadFromExisting();
+string post(int lineNO);
+string fetchLoaded();
+void eraseSubStr(std::string & mainStr, const std::string & toErase);
+
+void frameManager() {
+    if(system("framemanager"))
+    {
+        cout<<""<<endl;
+    }
+}
 
 int main()
-{   
+{
+    std::cout<<"Loading...";
     applySettings();
     //loophandlerFile();
     //frameCreatorFile();
@@ -46,7 +64,8 @@ void menu()
         filesCheker();
         system("CLS");
         logo();
-        cout<<"\t\t\t\t\t\tFPS : "<<fps<<endl;
+        cout<<"\t\t\t\t\t\tFPS: "<<fps<<endl;
+        cout<<"Active: "<<loaded<<endl<<endl;
         cout<<"\t[1] Select Video"<<endl;
         cout<<"\t[2] Process"<<endl;
         cout<<"\t[3] Check Files"<<endl;
@@ -72,9 +91,9 @@ void menu()
 
         switch (menuHandler)
         {
-        case 1: selectvideo();
+        case 1: selectVideoMenu();
                 break;
-        case 2: mainProcess();
+        case 2: processingMenu();
                 break;
         case 3: filesChekerManual();
                 break;
@@ -100,8 +119,15 @@ void selectvideo()
 
 void mainProcess()
 {
-	
-    if(system("loophandler"))
+    //string FPS = std::to_string(fps);
+
+    std::stringstream ss;
+    ss<<fps;
+    std::string FPS = ss.str();
+    
+    string loophandler = "loophandler " + FPS + " \"" + loaded + "\"";
+
+    if(system(loophandler.c_str()))
     {
         cout<<""<<endl;
     }
@@ -290,6 +316,14 @@ void settingsFile()
     settingsFile.open("Settings.dat");
     settingsFile<<fps;
     settingsFile.close();
+
+    settingsFile.open("loader.dat");
+    settingsFile<<fps;
+    settingsFile.close();
+
+    settingsFile.open("frames_data.we");
+    settingsFile<<fps;
+    settingsFile.close();
 }
 
 void cleanup()
@@ -369,6 +403,37 @@ void settings()
     }
 }
 
+void selectVideoMenu() 
+{
+    int switchVar;
+    while (1)
+    {
+        system("CLS");
+        logo();
+        cout<<"\t\t\t\t\t\tFPS : "<<fps<<endl;
+        cout<<"\nLoad video :"<<endl<<endl;
+        cout<<"\t\t[1] Select new video\n";
+        cout<<"\t\t[2] Select from existing data\n";
+        cout<<"\t\t[3] Cancel\n";
+        cout<<"\t\t    >>>> ";
+        cin>>switchVar;
+
+        switch (switchVar)
+        {
+        case 1 : selectvideo();
+                 frameManager();
+                 break;
+        case 2 : loadFromExisting();
+        case 3 :menu();
+                break;
+        default: cout<<"Invalid Imput!"<<endl;
+        }
+
+    }
+    
+    logo();
+}
+
 void setFPS()
 {   
     cout<<"Set FPS :\n"<<endl;
@@ -383,6 +448,7 @@ void setFPS()
     Sleep(3000);
 }
 
+
 int fetchSettings()
 {
     int temp;
@@ -393,9 +459,21 @@ int fetchSettings()
     return temp;
 }
 
+std::string fetchLoaded() {
+    std::ifstream loaderFile("loader.dat");
+    std::string line;
+
+    for(int i = 1; i<= 1; i++) {
+        std::getline(loaderFile, line);
+    }
+    return line;
+}
+
 void applySettings()
 {
     fps = fetchSettings();
+    loaded = fetchLoaded();
+    frameManager();
 }
 
 void clearData()
@@ -427,6 +505,71 @@ void license()
     }
 }
 
+string post(int lineNO) 
+{
+    std::ifstream file("frames_data.we");
+    std::string line;
+ 
+    for(int i = 1; i <= lineNO; i++) {
+        std::getline(file, line);
+    }
+    //std::cout<<line;
+    return line;
+}
+
+void setLoaded(std::string load)
+{
+    std::ofstream setloaded;
+    setloaded.open("loader.dat");
+    setloaded<<load;
+    setloaded.close();
+    applySettings();
+}
+
+void readLines() 
+{
+    std::ifstream file("frames_data.we");
+    std::string str;
+    int i = 1;
+    while (std::getline(file, str)) {
+    eraseSubStr(str, "frames/");
+    std::cout <<i<<": "<< str << "\n";
+    i++;
+    }
+}
+
+void eraseSubStr(std::string & mainStr, const std::string & toErase)
+{
+    size_t pos = mainStr.find(toErase);
+    if (pos != std::string::npos)
+    {
+        mainStr.erase(pos, toErase.length());
+    }
+}
+
+void loadFromExisting() 
+{
+    system("CLS");
+    logo();
+    cout<<"\t\t\t\t\t\tFPS: "<<fps<<endl;
+    cout<<"Active: "<<loaded<<endl<<endl;
+    int lineNo = 1;
+    readLines();
+    std::cout<<"Enter index of video: ";
+    std::cin>>lineNo;
+    std::string loadedS = post(lineNo);
+    setLoaded(loadedS);
+}
+
+void processingMenu()
+{
+    system("CLS");
+    logo();
+    cout<<"\t\t\t\t\t\tFPS: "<<fps<<endl;
+    cout<<"Active: "<<loaded<<endl<<endl;
+    mainProcess();
+}
+
 void logo()
 {   
     system("CLS");
@@ -435,7 +578,7 @@ void logo()
     cout<<"\t||     D  e   e   dddd||  $$$$$$  e   e  C      "<<endl;
     cout<<"\t||     D  eeee    ||  ||       $  eeee   C      "<<endl;
     cout<<"\t||DDDDD   eeeee   dddd||  $$$$$$  eeeee  CCCCC  "<<endl;
-    cout<<"\t                     Instagram : xd.fresh  "<<endl;
+    cout<<"\t                     Instagram : amartya.deshmukh  "<<endl;
     cout<<"\t                     GitHub    : Konohamaru04   "<<endl;
     cout<<"\n                  Cheap Wallpaper Engine            "<<endl<<endl;
 }
